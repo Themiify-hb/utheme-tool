@@ -1,5 +1,6 @@
 import tkinter as tk
 import os
+import platform
 from tkinter import ttk, filedialog, messagebox
 from create_utheme import create_theme_archive
 
@@ -110,7 +111,13 @@ def create_theme():
 
 root = tk.Tk()
 root.title("Utheme Tool")
-root.geometry("400x600")
+
+if platform.system() == "Darwin":
+    # UI is weird on Mac
+    root.geometry("550x600")
+else:
+    # Have to test on Linux distros
+    root.geometry("400x600")
 root.resizable(False, False)
 
 patch_row_count = 0
