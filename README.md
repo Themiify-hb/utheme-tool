@@ -1,3 +1,11 @@
 # Utheme-Tool
+A tool to create Wii U Theme Archives (`.utheme`).
 
-Tool to make uthemes... duh
+- Requires `.bps` patches made with [Rom Patcher JS](https://www.marcrobledo.com/RomPatcher.js/) or any other `.bps` tool.
+
+- Requires the original files that correspond to each `.bps` file (e.g. `Men.pack`). 
+
+## Building
+You can run `utheme-tool.py` if you have Python 3 installed, alternatively you can use `pyinstaller`
+
+Example usage: `pyinstaller --onefile --windowed --add-data "create_utheme.py;." utheme-tool.py`
