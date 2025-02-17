@@ -36,8 +36,8 @@ def add_patch_fields():
     original_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(original_button), height=2, width=25)
     original_button.grid(row=row + 2, column=1, pady=5, padx=10, sticky="ew")
 
-    # Relative Path Section
-    relative_label = tk.Label(patch_frame, text="Relative path:")
+    # Menu Path Section
+    relative_label = tk.Label(patch_frame, text="Menu path:")
     relative_label.grid(row=row + 3, column=0, padx=5, sticky="w")
     relative_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to where the file would be found in /content\n\n(e.g. if you're using Men.pack you would input: Common/Package/Men.pack)"), width=2, height=1, relief="solid", borderwidth=1)
     relative_hint_button.grid(row=row + 3, column=2, padx=5, pady=5, sticky="w")
@@ -171,10 +171,10 @@ h_theme_patches.grid(row=7, column=0, columnspan=3, pady=10, sticky="n")
 patch_frame = tk.Frame(scrollable_frame)
 patch_frame.grid(row=8, column=0, columnspan=3, pady=5)
 
-add_patch_button = tk.Button(scrollable_frame, text="Add New Patch File", command=add_patch_fields, width=20, height=1, font=("Arial", 10))
+add_patch_button = tk.Button(scrollable_frame, text="Add New Patch Files", command=add_patch_fields, width=20, height=1, font=("Arial", 10))
 add_patch_button.grid(row=9, column=0, columnspan=3, pady=5)
 
-remove_patch_button = tk.Button(scrollable_frame, text="Remove Last Patch", command=remove_patch, width=20, height=1, font=("Arial", 10))
+remove_patch_button = tk.Button(scrollable_frame, text="Remove Last Patch Files", command=remove_patch, width=20, height=1, font=("Arial", 10))
 remove_patch_button.grid(row=10, column=0, columnspan=3, pady=5)
 
 create_button = tk.Button(scrollable_frame, text="Create Theme Archive", command=create_theme, width=20, height=1, font=("Arial", 10))
