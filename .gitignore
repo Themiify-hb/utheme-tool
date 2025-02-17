@@ -1,2 +1,5 @@
 /tests
-metadata.json
+/build
+/dist
+/__pycache__
+*.spec
