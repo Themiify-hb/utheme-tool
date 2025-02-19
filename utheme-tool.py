@@ -26,7 +26,7 @@ def add_patch_fields():
     bps_label.grid(row=row + 1, column=0, padx=5, sticky="w")
     bps_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to a bps file"), width=2, height=1, relief="solid", borderwidth=1)
     bps_hint_button.grid(row=row + 1, column=2, padx=5, pady=5, sticky="w")
-    bps_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(bps_button), height=2, width=25)
+    bps_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(bps_button, relative_entry), height=2, width=25)
     bps_button.grid(row=row + 1, column=1, pady=5, padx=10, sticky="ew")
 
     # Original File Section
@@ -34,7 +34,7 @@ def add_patch_fields():
     original_label.grid(row=row + 2, column=0, padx=5, sticky="w")
     original_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to the original file that relates to the bps file"), width=2, height=1, relief="solid", borderwidth=1)
     original_hint_button.grid(row=row + 2, column=2, padx=5, pady=5, sticky="w")
-    original_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(original_button), height=2, width=25)
+    original_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(original_button, relative_entry), height=2, width=25)
     original_button.grid(row=row + 2, column=1, pady=5, padx=10, sticky="ew")
 
     # Menu Path Section
@@ -60,12 +60,22 @@ def add_patch_fields():
 
     patch_header_count += 1
 
-def browse_file(button_widget):
+def browse_file(button_widget, relative_entry):
     file_path = filedialog.askopenfilename(title="Select a file")
     if file_path:
         full_paths[button_widget] = file_path
         short_path = os.path.basename(file_path)
         button_widget.config(text=short_path)
+
+        if short_path == "Men.pack":
+            relative_entry.delete(0, tk.END)
+            relative_entry.insert(0, "Common/Package/Men.pack")
+        elif short_path == "Men2.pack":
+            relative_entry.delete(0, tk.END)
+            relative_entry.insert(0, "Common/Package/Men2.pack")
+        elif short_path == "cafe_barista_men.bfsar":
+            relative_entry.delete(0, tk.END)
+            relative_entry.insert(0, "Common/Sound/Men/cafe_barista_men.bfsar")
 
 def remove_patch():
     global patch_row_count, patch_header_count
