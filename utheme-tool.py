@@ -12,6 +12,17 @@ def show_hint_dialog(hint_header, hint_body):
 def remove_spaces(new_value):
     return " " not in new_value
 
+def limit_characters(new_value, max_length):
+    return len(new_value) <= int(max_length)
+
+def on_scroll(event):
+    if platform.system() == "Windows":
+        canvas.yview_scroll(-1 * (event.delta // 120), "units")  # Windows scroll
+    elif platform.system() == "Darwin":
+        canvas.yview_scroll(-1 * event.delta, "units")  # Mac scroll
+    #else:
+        # Linux scrolling someday... (If someone wants to test this on linux hit me up)
+
 def add_patch_fields():
     global patch_row_count, patch_header_count, patch_widgets
     row = patch_row_count
@@ -136,8 +147,13 @@ patch_widgets = []
 
 vcmd = (root.register(remove_spaces), '%P')
 
+vcmd_name = (root.register(limit_characters), '%P', 30)
+vcmd_author = (root.register(limit_characters), '%P', 25)
+vcmd_id = (root.register(limit_characters), '%P', 25)
+
 canvas = tk.Canvas(root)
 canvas.pack(side="left", fill="both", expand=True)
+canvas.bind_all("<MouseWheel>", on_scroll) 
 
 scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
 scrollbar.pack(side="right", fill="y")
@@ -162,22 +178,23 @@ h_theme_metadata = tk.Label(scrollable_frame, text="Theme Metadata", font=("Aria
 h_theme_metadata.grid(row=2, column=0, columnspan=3, pady=5, sticky="n")
 
 tk.Label(scrollable_frame, text="Theme Name:").grid(row=3, column=0, padx=5, sticky="e")
-e_theme_name = tk.Entry(scrollable_frame, width=25)
+e_theme_name = tk.Entry(scrollable_frame, width=25, validate="key", validatecommand=vcmd_name)
 e_theme_name.grid(row=3, column=1, pady=5, padx=10, sticky="w")
 
 tk.Label(scrollable_frame, text="Theme Author:").grid(row=4, column=0, padx=5, sticky="e")
-e_theme_author = tk.Entry(scrollable_frame, width=25)
+e_theme_author = tk.Entry(scrollable_frame, width=25, validate="key", validatecommand=vcmd_author)
 e_theme_author.grid(row=4, column=1, pady=5, padx=10, sticky="w")
 
 tk.Label(scrollable_frame, text="Theme ID:").grid(row=5, column=0, padx=5, sticky="e")
-e_theme_id = tk.Entry(scrollable_frame, width=25, validate="key", validatecommand=vcmd)
+e_theme_id = tk.Entry(scrollable_frame, width=25, validate="key", validatecommand=vcmd_id)
 e_theme_id.grid(row=5, column=1, pady=5, padx=10, sticky="w")
+
 id_hint_button = tk.Button(scrollable_frame, text="?", command=lambda: show_hint_dialog("Info", "An ID for your theme. Will be used as the name of the SDCafiine modpack when installed with Themiify among other things."), width=2, height=1, relief="solid", borderwidth=1)
 id_hint_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
 
 tk.Label(scrollable_frame, text="Theme Region:").grid(row=6, column=0, padx=5, sticky="e")
 regions = ["Universal", "America", "Japan", "Europe"]
-e_theme_region = ttk.Combobox(scrollable_frame, values=regions, width=22)
+e_theme_region = ttk.Combobox(scrollable_frame, values=regions, width=22, state="readonly")
 e_theme_region.grid(row=6, column=1, pady=5, padx=10, sticky="w")
 region_hint_button = tk.Button(scrollable_frame, text="?", command=lambda: show_hint_dialog("Info", "Select the region for your theme (Defaults to Universal).\n\nNOTE: The only reason to select a specific region is if a theme has text patches (which are region specific), otherwise please use the Universal region. Please do not add text patches from different regions in your theme archive, they will fail to install with Themiify."), width=2, height=1, relief="solid", borderwidth=1)
 region_hint_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
