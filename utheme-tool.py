@@ -33,17 +33,17 @@ def add_patch_fields():
     patch_label.grid(row=row, column=0, columnspan=2, pady=5)
 
     # BPS Section
-    bps_label = tk.Label(patch_frame, text="BPS file path:")
+    bps_label = tk.Label(patch_frame, text="Patch file:")
     bps_label.grid(row=row + 1, column=0, padx=5, sticky="w")
-    bps_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to a bps file"), width=2, height=1, relief="solid", borderwidth=1)
+    bps_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Select the path to a patch (.bps) file\n\nShould two patch files haves the same name (i.e. AllMessage.bps), the file will be written in the archive with an incremented value (i.e. AllMessage1.bps)"), width=2, height=1, relief="solid", borderwidth=1)
     bps_hint_button.grid(row=row + 1, column=2, padx=5, pady=5, sticky="w")
     bps_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(bps_button, relative_entry), height=2, width=25)
     bps_button.grid(row=row + 1, column=1, pady=5, padx=10, sticky="ew")
 
     # Original File Section
-    original_label = tk.Label(patch_frame, text="Original file path:")
+    original_label = tk.Label(patch_frame, text="Original file:")
     original_label.grid(row=row + 2, column=0, padx=5, sticky="w")
-    original_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to the original file that relates to the bps file"), width=2, height=1, relief="solid", borderwidth=1)
+    original_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Select the path to the original file that relates to the patch file"), width=2, height=1, relief="solid", borderwidth=1)
     original_hint_button.grid(row=row + 2, column=2, padx=5, pady=5, sticky="w")
     original_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(original_button, relative_entry), height=2, width=25)
     original_button.grid(row=row + 2, column=1, pady=5, padx=10, sticky="ew")
@@ -51,7 +51,7 @@ def add_patch_fields():
     # Menu Path Section
     relative_label = tk.Label(patch_frame, text="Menu path:")
     relative_label.grid(row=row + 3, column=0, padx=5, sticky="w")
-    relative_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Path to where the file would be found in /content\n\n(e.g. if you're using Men.pack you would input: Common/Package/Men.pack)"), width=2, height=1, relief="solid", borderwidth=1)
+    relative_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Input the path where the original file would be found in /content\n\n(e.g. if you're using Men.pack you would input: Common/Package/Men.pack)"), width=2, height=1, relief="solid", borderwidth=1)
     relative_hint_button.grid(row=row + 3, column=2, padx=5, pady=5, sticky="w")
     relative_entry = tk.Entry(patch_frame, width=35)
     relative_entry.grid(row=row + 3, column=1, pady=5, padx=10, sticky="ew")
@@ -74,17 +74,25 @@ def add_patch_fields():
 def browse_file(button_widget, relative_entry):
     file_path = filedialog.askopenfilename(title="Select a file")
     if file_path:
-        full_paths[button_widget] = file_path
-        short_path = os.path.basename(file_path)
-        button_widget.config(text=short_path)
+        file_name = os.path.basename(file_path)
+        renamed_filename = file_name
+        
+        # Handle duplicate filenames (only really for text patches)
+        count = 1
+        while any(fn == renamed_filename for _, fn in full_paths.values()):
+            renamed_filename = f"{os.path.splitext(file_name)[0]}{count}{os.path.splitext(file_name)[1]}"
+            count += 1
 
-        if short_path == "Men.pack":
+        full_paths[button_widget] = (file_path, renamed_filename) 
+        button_widget.config(text=renamed_filename)
+
+        if renamed_filename == "Men.pack":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Package/Men.pack")
-        elif short_path == "Men2.pack":
+        elif renamed_filename == "Men2.pack":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Package/Men2.pack")
-        elif short_path == "cafe_barista_men.bfsar":
+        elif renamed_filename == "cafe_barista_men.bfsar":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Sound/Men/cafe_barista_men.bfsar")
 
@@ -113,16 +121,51 @@ def create_theme():
         bps_button = patch['bps_button']
         original_button = patch['original_button']
         relative_path = patch['relative_entry'].get()
-        bps_path = full_paths.get(bps_button, "")
-        original_path = full_paths.get(original_button, "")
-        patch_details.append((bps_path, original_path, relative_path))
+
+        # Retrieve both the full path and renamed filename for the bps file
+        bps_path, bps_filename = full_paths.get(bps_button, ("", ""))
+        original_path, _ = full_paths.get(original_button, ("", ""))
+
+        # Append the correct details, using only the renamed bps filename
+        patch_details.append((bps_filename, original_path, relative_path))
+
     theme_name = e_theme_name.get()
     theme_author = e_theme_author.get()
     theme_id = e_theme_id.get()
     theme_region = e_theme_region.get() if e_theme_region.get() else "Universal"
+
+    if not theme_name:
+        messagebox.showwarning("Input Error", "Please name your theme")
+        return
+
+    if not theme_author:
+        messagebox.showwarning("Input Error", "Please input the theme's author")
+        return
+    
+    if not theme_id:
+        messagebox.showwarning("Input Error", "Please input the theme ID")
+        return
+    
+    if not patch_details:
+        messagebox.showwarning("Input Error", "Please add at least one patch")
+        return
+    
+    if not bps_path:
+        messagebox.showwarning("Input Error", "Please select your patch file")
+        return
+
+    if not original_path:
+        messagebox.showwarning("Input Error", "Please select your original file")
+        return
+        
+    if not relative_path:
+        messagebox.showwarning("Input Error", "Please input the menu path")
+        return
+    
     output_path = filedialog.askdirectory(title="Select Output Folder")
+
     if output_path:
-        utheme_name, err_str = create_theme_archive(theme_name, theme_author, theme_id, theme_region, patch_details, output_path)
+        utheme_name, err_str = create_theme_archive(theme_name, theme_author, theme_id, theme_region, patch_details, output_path, full_paths)
         if utheme_name:
             messagebox.showinfo("Success", f"Theme archive created successfully! Saved as {utheme_name}")
         else:
