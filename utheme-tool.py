@@ -4,6 +4,8 @@ import platform
 from tkinter import ttk, filedialog, messagebox
 from create_utheme import create_theme_archive
 
+version = 1.1
+
 full_paths = {}
 selected_patch_files = set()
 
@@ -182,7 +184,7 @@ def create_theme():
         messagebox.showwarning("Output Error", "Please select an output folder.")
 
 root = tk.Tk()
-root.title("Utheme Tool")
+root.title(f"Utheme Tool - v{version}")
 
 if platform.system() == "Darwin":
     # UI is weird on Mac
@@ -222,7 +224,7 @@ scrollable_frame.bind("<Configure>", update_scroll_region)
 h_main = tk.Label(scrollable_frame, text="Utheme Tool", font=("Arial", 24, "bold"))
 h_main.grid(row=0, column=0, columnspan=3, pady=10, sticky="n")
 
-h_desc = tk.Label(scrollable_frame, text="Tool to create Wii U theme archives (utheme)", font=("Arial", 12))
+h_desc = tk.Label(scrollable_frame, text="Tool to create Wii U theme archives (.utheme)", font=("Arial", 12))
 h_desc.grid(row=1, column=0, columnspan=3, pady=5, sticky="n")
 
 h_theme_metadata = tk.Label(scrollable_frame, text="Theme Metadata", font=("Arial", 12, "bold"))
