@@ -5,6 +5,7 @@ from tkinter import ttk, filedialog, messagebox
 from create_utheme import create_theme_archive
 
 full_paths = {}
+selected_patch_files = set()
 
 def show_hint_dialog(hint_header, hint_body):
     messagebox.showinfo(hint_header, hint_body)
@@ -35,7 +36,7 @@ def add_patch_fields():
     # BPS Section
     bps_label = tk.Label(patch_frame, text="Patch file:")
     bps_label.grid(row=row + 1, column=0, padx=5, sticky="w")
-    bps_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Select the path to a patch (.bps) file\n\nShould two patch files haves the same name (i.e. AllMessage.bps), the file will be written in the archive with an incremented value (i.e. AllMessage1.bps)"), width=2, height=1, relief="solid", borderwidth=1)
+    bps_hint_button = tk.Button(patch_frame, text="?", command=lambda: show_hint_dialog("Info", "Select the path to a patch (.bps) file"), width=2, height=1, relief="solid", borderwidth=1)
     bps_hint_button.grid(row=row + 1, column=2, padx=5, pady=5, sticky="w")
     bps_button = tk.Button(patch_frame, text="Browse", command=lambda: browse_file(bps_button, relative_entry), height=2, width=25)
     bps_button.grid(row=row + 1, column=1, pady=5, padx=10, sticky="ew")
@@ -74,27 +75,38 @@ def add_patch_fields():
 def browse_file(button_widget, relative_entry):
     file_path = filedialog.askopenfilename(title="Select a file")
     if file_path:
-        file_name = os.path.basename(file_path)
-        renamed_filename = file_name
-        
-        # Handle duplicate filenames (only really for text patches)
-        count = 1
-        while any(fn == renamed_filename for _, fn in full_paths.values()):
-            renamed_filename = f"{os.path.splitext(file_name)[0]}{count}{os.path.splitext(file_name)[1]}"
-            count += 1
+        full_paths[button_widget] = file_path
+        short_path = os.path.basename(file_path)
+        button_widget.config(text=short_path)
 
-        full_paths[button_widget] = (file_path, renamed_filename) 
-        button_widget.config(text=renamed_filename)
-
-        if renamed_filename == "Men.pack":
+        if short_path == "Men.pack":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Package/Men.pack")
-        elif renamed_filename == "Men2.pack":
+        elif short_path == "Men2.pack":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Package/Men2.pack")
-        elif renamed_filename == "cafe_barista_men.bfsar":
+        elif short_path == "cafe_barista_men.bfsar":
             relative_entry.delete(0, tk.END)
             relative_entry.insert(0, "Common/Sound/Men/cafe_barista_men.bfsar")
+        check_duplicate_patch_files()
+
+def check_duplicate_patch_files():
+    bps_file_paths = []
+    for patch in patch_widgets:
+        bps_button = patch['bps_button']
+        if bps_button in full_paths:
+            bps_file_paths.append(full_paths[bps_button])
+
+    if len(bps_file_paths) != len(set(bps_file_paths)):
+        messagebox.showerror("Input Error", "Patch files cannot have the same filenames.\n\nIf you have a reason to patch a file with the same filename as one you have already included here (i.e. Text patches are done on a file called AllMessage.szs which has a consistent name across languages and regions), simply rename the .bps so that you may use it here.")
+        last_clicked_bps = None
+        for patch in reversed(patch_widgets):
+            if patch['bps_button'] in full_paths:
+                last_clicked_bps = patch['bps_button']
+                break
+        if last_clicked_bps:
+            last_clicked_bps.config(text="Browse")
+            del full_paths[last_clicked_bps]
 
 def remove_patch():
     global patch_row_count, patch_header_count
@@ -111,9 +123,10 @@ def remove_patch():
         last_patch['bps_hint_button'].grid_forget()
         last_patch['original_hint_button'].grid_forget()
         last_patch['relative_hint_button'].grid_forget()
-        
+
         patch_row_count -= 4
         patch_header_count -= 1
+        check_duplicate_patch_files()
 
 def create_theme():
     patch_details = []
@@ -121,14 +134,9 @@ def create_theme():
         bps_button = patch['bps_button']
         original_button = patch['original_button']
         relative_path = patch['relative_entry'].get()
-
-        # Retrieve both the full path and renamed filename for the bps file
-        bps_path, bps_filename = full_paths.get(bps_button, ("", ""))
-        original_path, _ = full_paths.get(original_button, ("", ""))
-
-        # Append the correct details, using only the renamed bps filename
-        patch_details.append((bps_filename, original_path, relative_path))
-
+        bps_path = full_paths.get(bps_button, "")
+        original_path = full_paths.get(original_button, "")
+        patch_details.append((bps_path, original_path, relative_path))
     theme_name = e_theme_name.get()
     theme_author = e_theme_author.get()
     theme_id = e_theme_id.get()
