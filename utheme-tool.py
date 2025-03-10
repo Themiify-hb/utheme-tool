@@ -98,7 +98,7 @@ def check_duplicate_patch_files():
             bps_file_paths.append(full_paths[bps_button])
 
     if len(bps_file_paths) != len(set(bps_file_paths)):
-        messagebox.showerror("Input Error", "Patch files cannot have the same filenames.\n\nIf you have a reason to patch a file with the same filename as one you have already included here (i.e. Text patches are done on a file called AllMessage.szs which has a consistent name across languages and regions), simply rename the .bps so that you may use it here.")
+        messagebox.showerror("Input Error", "Patch files cannot have the same filenames.\n\nIf you have a reason to patch a file with the same filename as one you have already included here (e.g. Text patches are done on a file called AllMessage.szs which has a consistent name across languages and regions), simply rename the .bps so that you may use it here.")
         last_clicked_bps = None
         for patch in reversed(patch_widgets):
             if patch['bps_button'] in full_paths:
