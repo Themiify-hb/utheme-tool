@@ -8,4 +8,4 @@ A tool to create Wii U Theme Archives (`.utheme`).
 ## Building
 You can run `utheme-tool.py` if you have Python 3 installed, alternatively you can use `pyinstaller` to create a single executable.
 
-Example usage: `pyinstaller --onefile --windowed --add-data "create_utheme.py;." utheme-tool.py`
+Example usage: `pyinstaller --onefile --windowed --icon=icon.ico --add-data "create_utheme.py;." --add-data "icon.ico;." utheme-tool.py`
