@@ -193,7 +193,7 @@ def create_theme():
         if res == 0:
             messagebox.showinfo("Success", f"Theme archive created successfully! Saved to {output_path}")
         else:
-            messagebox.showwarning("Utheme Creation Failure", res)
+            messagebox.showwarning("Theme Archive Creation Failure", res)
     else:
         messagebox.showwarning("Output Error", "Please select a valid location to save your theme archive.")
 
@@ -207,7 +207,7 @@ elif platform.system() == "Darwin":
     # UI is weird on Mac
     root.geometry("550x600")
 elif platform.system() == "Linux":
-    # UI is equally as weird on linux
+    # UI is equally as weird on Linux
     root.geometry("480x600")
     
 root.resizable(False, False)
