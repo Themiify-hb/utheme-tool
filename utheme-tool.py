@@ -1,6 +1,7 @@
 import tkinter as tk
 import os
 import platform
+import sys
 from tkinter import ttk, filedialog, messagebox
 from create_utheme import create_theme_archive
 
@@ -8,6 +9,11 @@ version = 1.1
 
 full_paths = {}
 selected_patch_files = set()
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path) 
 
 def show_hint_dialog(hint_header, hint_body):
     messagebox.showinfo(hint_header, hint_body)
@@ -20,11 +26,14 @@ def limit_characters(new_value, max_length):
 
 def on_scroll(event):
     if platform.system() == "Windows":
-        canvas.yview_scroll(-1 * (event.delta // 120), "units")  # Windows scroll
+        canvas.yview_scroll(-1 * (event.delta // 120), "units")
     elif platform.system() == "Darwin":
-        canvas.yview_scroll(-1 * event.delta, "units")  # Mac scroll
-    #else:
-        # Linux scrolling someday... (If someone wants to test this on linux hit me up)
+        canvas.yview_scroll(-1 * event.delta, "units")
+    elif platform.system() == "Linux":    
+        if event.num == 4:
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            canvas.yview_scroll(1, "units")
 
 def add_patch_fields():
     global patch_row_count, patch_header_count, patch_widgets
@@ -100,7 +109,7 @@ def check_duplicate_patch_files():
             bps_file_paths.append(full_paths[bps_button])
 
     if len(bps_file_paths) != len(set(bps_file_paths)):
-        messagebox.showerror("Input Error", "Patch files cannot have the same filenames.\n\nIf you have a reason to patch a file with the same filename as one you have already included here (e.g. Text patches are done on a file called AllMessage.szs which has a consistent name across languages and regions), simply rename the .bps so that you may use it here.")
+        messagebox.showerror("Input Error", "Patch files cannot have the same filenames.\n\nIf you have a reason to patch a file with the same filename as one you have already included here (e.g. Text patches are done on a file called AllMessage.szs which has a consistent name across languages and regions), simply rename the .bps to something different so that you may use it here.")
         last_clicked_bps = None
         for patch in reversed(patch_widgets):
             if patch['bps_button'] in full_paths:
@@ -172,26 +181,35 @@ def create_theme():
         messagebox.showwarning("Input Error", "Please input the menu path")
         return
     
-    output_path = filedialog.askdirectory(title="Select Output Folder")
+    output_path = filedialog.asksaveasfilename(
+        title="Save Theme Archive",
+        defaultextension=".utheme",
+        filetypes=[("Wii U Theme Archive", "*.utheme")],
+        initialfile=theme_id
+    )
 
     if output_path:
-        utheme_name, err_str = create_theme_archive(theme_name, theme_author, theme_id, theme_region, patch_details, output_path, full_paths)
-        if utheme_name:
-            messagebox.showinfo("Success", f"Theme archive created successfully! Saved as {utheme_name}")
+        res = create_theme_archive(theme_name, theme_author, theme_id, theme_region, patch_details, output_path)
+        if res == 0:
+            messagebox.showinfo("Success", f"Theme archive created successfully! Saved to {output_path}")
         else:
-            messagebox.showwarning("Utheme Creation Failure", err_str)
+            messagebox.showwarning("Utheme Creation Failure", res)
     else:
-        messagebox.showwarning("Output Error", "Please select an output folder.")
+        messagebox.showwarning("Output Error", "Please select a valid location to save your theme archive.")
 
 root = tk.Tk()
 root.title(f"Utheme Tool - v{version}")
 
-if platform.system() == "Darwin":
+if platform.system() == "Windows":
+    root.geometry("400x600")
+    root.iconbitmap(resource_path("icon.ico"))
+elif platform.system() == "Darwin":
     # UI is weird on Mac
     root.geometry("550x600")
-else:
-    # Have to test on Linux distros
-    root.geometry("400x600")
+elif platform.system() == "Linux":
+    # UI is equally as weird on linux
+    root.geometry("480x600")
+    
 root.resizable(False, False)
 
 patch_row_count = 0
@@ -206,7 +224,11 @@ vcmd_id = (root.register(limit_characters), '%P', 25)
 
 canvas = tk.Canvas(root)
 canvas.pack(side="left", fill="both", expand=True)
-canvas.bind_all("<MouseWheel>", on_scroll) 
+
+canvas.bind_all("<MouseWheel>", on_scroll)
+if platform.system() == "Linux":
+    canvas.bind_all("<Button-4>", on_scroll)
+    canvas.bind_all("<Button-5>", on_scroll)
 
 scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
 scrollbar.pack(side="right", fill="y")

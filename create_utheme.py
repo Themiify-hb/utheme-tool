@@ -73,7 +73,8 @@ def create_theme_archive(theme_name, theme_author, theme_id, theme_region, bps_f
  
          data = {**metadata, "Patches": patches}
  
-         utheme_output_path = output_path + "/" + theme_id + ".utheme"
+         utheme_output_path = output_path
+
          with zipfile.ZipFile(utheme_output_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
              for bps in bps_files:
                  archive.write(bps, os.path.basename(bps))
@@ -82,9 +83,9 @@ def create_theme_archive(theme_name, theme_author, theme_id, theme_region, bps_f
              archive.writestr("metadata.json", metadata_json)
  
          print(f"Created utheme: {utheme_output_path} successfully!")
-         return utheme_output_path, 0
+         return 0
      else:
          print("Failure to write theme metadata file")
-         return 0, error_str
+         return error_str
 
 
